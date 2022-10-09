@@ -1,9 +1,9 @@
 name: CI
 on:
   pull_request:
-    types:
-      - closed
-      - opened
+    # types:
+    #   - closed
+    #   - opened
     branches: [develop]
   push:
     branches: [develop]
