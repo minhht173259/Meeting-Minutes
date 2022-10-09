@@ -23,6 +23,7 @@ jobs:
       - run: npm run prettier
       - name: Run Test
         # run: npm test -- --coverage
+        run: echo "Run test"
         env: 
           CI: true
       - name: Build Project
