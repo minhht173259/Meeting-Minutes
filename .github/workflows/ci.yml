@@ -15,7 +15,7 @@ jobs:
       - name: Install Dependency
         run: npm install
       - run: npm run prettier
-      - run: npm test -- --coverage
-        env: 
-          CI: true
+      # - run: npm test -- --coverage
+      #   env: 
+      #     CI: true
       
