@@ -1,1 +1,21 @@
 name: CI
+on:
+  pull_request:
+    branches: [develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.14.x
+      - name: Install Dependency
+        run: npm ci
+      - run: npm run prettier
+      - run: npm test -- --coverage
+        env: 
+          CI: true
+      
