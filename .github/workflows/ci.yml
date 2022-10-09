@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 16.14.x
       - name: Install Dependency
-        run: npm ci
+        run: npm install
       - run: npm run prettier
       - run: npm test -- --coverage
         env: 
