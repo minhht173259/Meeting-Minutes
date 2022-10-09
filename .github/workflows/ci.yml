@@ -1,7 +1,13 @@
 name: CI
 on:
   pull_request:
+    types:
+      - closed
+      - opened
     branches: [develop]
+  push:
+    branches: [develop]
+
 
 jobs:
   build:
@@ -15,7 +21,14 @@ jobs:
       - name: Install Dependency
         run: npm install
       - run: npm run prettier
-      # - run: npm test -- --coverage
-      #   env: 
-      #     CI: true
-      
+      - name: Run Test
+        # run: npm test -- --coverage
+        env: 
+          CI: true
+      - name: Build Project
+        if: github.event_name == 'push'
+        run: npm run build
+        timeout-minutes: 10
+      - name: Deploy to Staging
+        if: github.event_name == 'push'
+        run: echo "deloy to Surge"
