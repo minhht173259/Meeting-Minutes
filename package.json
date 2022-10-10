@@ -26,7 +26,8 @@
     "lint": "eslint --ext js,jsx src/",
     "lint:fix": "eslint --fix --ext js,jsx, src/",
     "prettier": "prettier --check \"src/**/(**.jsx|*.js|*.scss|*.css)\"",
-    "prettier:fix": "prettier --write \"src/**/(**.jsx|*.js|*.scss|*.css)\""
+    "prettier:fix": "prettier --write \"src/**/(**.jsx|*.js|*.scss|*.css)\"",
+    "prepare": "husky install"
   },
   "eslintConfig": {
     "extends": [
@@ -47,6 +48,8 @@
     ]
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
