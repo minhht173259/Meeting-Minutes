@@ -1,11 +1,9 @@
 name: CI
 on:
   pull_request:
-    # types:
-    #   - closed
-    #   - opened
     branches: [main]
-  push:
+  repository_dispatch:
+    types: [build, deploy]
     branches: [main]
 
 
@@ -13,7 +11,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Before Checkout
+        run: |
+          pwd
+          ls -a
+          echo $GITHUB_SHA
+          echo $GITHUB_REPOSITORY
+          echo $GITHUB_WORKSPACE
+      - name: Checkout code 
+        uses: actions/checkout@v3
+        # with:
+        #   ref: ${{ github.event.pull_request.head.sha }}
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
@@ -45,25 +53,26 @@ jobs:
       #     # path: path/**/[abc]rtifac?/*
       #     path: coverage
       - name: Build Project
-        if: github.event_name == 'push'
+        if: github.event_name == 'repository_dispatch'
         run: npm run build
         timeout-minutes: 10
       - name: Upload Build Folder
-        if: github.event_name == 'push' 
+        if: github.event_name == 'repository_dispatch'
         uses: actions/upload-artifact@v3
         with:
           name: build
           # path: path/**/[abc]rtifac?/*
           path: build
-            # For production process
-      - name: Create a Realease
-        if: github.event_name = 'push' && github.ref == 'ref/heads/main'
-        run: npx sematic-release
-        env: 
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Create a Realease
+      #   if: >- 
+      #     github.event_name = 'repository_dispatch' && github.ref == 'ref/heads/main'
+      #   run: npx sematic-release
+      #   env: 
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # - name: Download Artifact
       #   if: github.event_name == 'push'0
       #   uses: actions/download-artifact@v3
       - name: Deploy to Production
-        if: github.event_name == 'push'
+        if: github.event_name == 'repository_dispatch'
         run: echo "deloy to Surge"
