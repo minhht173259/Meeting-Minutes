@@ -1,0 +1,78 @@
+name: CI
+on:
+  pull_request:
+    branches: [main]
+  repository_dispatch:
+    types: [build, deploy]
+    branches: [main]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Before Checkout
+        run: |
+          pwd
+          ls -a
+          echo $GITHUB_SHA
+          echo $GITHUB_REPOSITORY
+          echo $GITHUB_WORKSPACE
+      - name: Checkout code 
+        uses: actions/checkout@v3
+        # with:
+        #   ref: ${{ github.event.pull_request.head.sha }}
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json')}}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        name: List the state of node modules
+        continue-on-error: true
+        run: npm list
+      - name: Use NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.14.x
+      - name: Install Dependency
+        run: npm install
+      - name: Run Prettier to check format code
+        run: npm run prettier
+      - name: Run Unit Test
+        # run: npm test -- --coverage
+        run: echo "Run test"
+        env: 
+          CI: true
+      # - name: Upload Test Coverage 
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: my-artifact
+      #     # path: path/**/[abc]rtifac?/*
+      #     path: coverage
+      - name: Build Project
+        if: github.event_name == 'repository_dispatch'
+        run: npm run build
+        timeout-minutes: 10
+      - name: Upload Build Folder
+        if: github.event_name == 'repository_dispatch'
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          # path: path/**/[abc]rtifac?/*
+          path: build
+
+      # - name: Create a Realease
+      #   if: >- 
+      #     github.event_name = 'repository_dispatch' && github.ref == 'ref/heads/main'
+      #   run: npx sematic-release
+      #   env: 
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Download Artifact
+      #   if: github.event_name == 'push'0
+      #   uses: actions/download-artifact@v3
+      - name: Deploy to Production
+        if: github.event_name == 'repository_dispatch'
+        run: echo "deloy to Surge"

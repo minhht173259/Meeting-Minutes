@@ -1,6 +1,5 @@
 import React from 'react';
 import { CustomComponentStyles } from '../custom-components/date-picker-range/styles/date-picker-range';
-import DatePickerCustom from '../custom-components/date-picker-range';
 import SelectContainer from '../custom-components/select-custom/container';
 
 export default function ComponentCustom() {
