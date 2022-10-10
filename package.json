@@ -22,7 +22,7 @@
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
-  }
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
