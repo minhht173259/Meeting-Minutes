@@ -14,14 +14,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hasFiles('**/package-lock.json')}}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Use NodeJS
         uses: actions/setup-node@v3
         with:
           node-version: 16.14.x
       - name: Install Dependency
         run: npm install
-      - run: npm run prettier
-      - name: Run Test
+      - name: Run Prettier to check format code
+        run: npm run prettier
+      - name: Run Unit Test
         # run: npm test -- --coverage
         run: echo "Run test"
         env: 

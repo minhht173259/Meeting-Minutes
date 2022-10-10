@@ -4,6 +4,7 @@ import { ProtectedRoute, IsUserRedirect } from './helpers/routers';
 import * as ROUTES from './constants/routes';
 import { useAuthListener } from './hooks';
 import ComponentCustom from './page/component-custom';
+import DatePickerCustom from './custom-components/date-picker-range';
 
 export default function App() {
   const { user } = useAuthListener();
@@ -13,6 +14,7 @@ export default function App() {
       <Switch>
         <Route exact path="/custom">
           <ComponentCustom />
+          <DatePickerCustom />
         </Route>
         <ProtectedRoute user={user} exact path={ROUTES.HOME}>
           <Home />
