@@ -4,12 +4,10 @@ on:
     # types:
     #   - closed
     #   - opened
-    branches: [develop]
+    branches: [main]
   push:
-    branches: [develop]
+    branches: [main]
 
-env:
-  MY_ENV: hello
 
 jobs:
   build:
@@ -57,9 +55,15 @@ jobs:
           name: build
           # path: path/**/[abc]rtifac?/*
           path: build
+            # For production process
+      - name: Create a Realease
+        if: github.event_name = 'push' && github.ref == 'ref/heads/main'
+        run: npx sematic-release
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # - name: Download Artifact
-      #   if: github.event_name == 'push'
+      #   if: github.event_name == 'push'0
       #   uses: actions/download-artifact@v3
-      - name: Deploy to Staging
+      - name: Deploy to Production
         if: github.event_name == 'push'
         run: echo "deloy to Surge"
