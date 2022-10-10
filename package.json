@@ -27,7 +27,6 @@
     "lint:fix": "eslint --fix --ext js,jsx, src/",
     "prettier": "prettier --check \"src/**/(**.jsx|*.js|*.scss|*.css)\"",
     "prettier:fix": "prettier --write \"src/**/(**.jsx|*.js|*.scss|*.css)\""
-    // "prepare": "husky install"
   },
   "eslintConfig": {
     "extends": [
