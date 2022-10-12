@@ -1,15 +1,19 @@
-name: CI
+name: CICD For Production Deployment
 on:
   pull_request:
     branches: [main]
   repository_dispatch:
-    types: [build, deploy]
+    types: ['prod_deployment']
     branches: [main]
 
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.14.x]
+      fail-fast: true
     steps:
       - name: Before Checkout
         run: |
@@ -18,6 +22,7 @@ jobs:
           echo $GITHUB_SHA
           echo $GITHUB_REPOSITORY
           echo $GITHUB_WORKSPACE
+          echo '${{ toJSON(github) }}'
       - name: Checkout code 
         uses: actions/checkout@v3
         # with:
@@ -36,7 +41,7 @@ jobs:
       - name: Use NodeJS
         uses: actions/setup-node@v3
         with:
-          node-version: 16.14.x
+          node-version: ${{ matrix.node_version }}
       - name: Install Dependency
         run: npm install
       - name: Run Prettier to check format code
@@ -61,7 +66,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: build
-          # path: path/**/[abc]rtifac?/*
           path: build
 
       # - name: Create a Realease
@@ -76,3 +80,21 @@ jobs:
       - name: Deploy to Production
         if: github.event_name == 'repository_dispatch'
         run: echo "deloy to Surge"
+      - name: Deploy Production to Heroku
+        if: >-
+          github.event_name == 'repository_dispatch' && github.ref == 'ref/heads/main'
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.API_HEROKU_TOKEN}}
+          heroku_app_name: $app_name #Must be unique in Heroku
+          heroku_email: $my_email
+          # usedocker: true
+        env:
+          app_name: risk-investigation
+          my_email: minh.ht173259@sis.hust.edu.vn
+      - name: Notification When Success
+        if: github.event_name == 'repository_dispatch' && github.ref == 'ref/heads/main' && success()
+        run: echo "Deploy Success"
+      - name: Notification When Failed
+        if: github.event_name == 'repository_dispatch' && github.ref == 'ref/heads/main' && failure()
+        run: echo "Deploy Failed"
