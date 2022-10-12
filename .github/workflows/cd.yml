@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         node-version: [16.14.x]
-      fail-fast: true
     steps:
       - name: Before Checkout
         run: |
@@ -82,7 +81,7 @@ jobs:
         run: echo "deloy to Surge"
       - name: Deploy Production to Heroku
         if: >-
-          github.event_name == 'repository_dispatch' && github.ref == 'ref/heads/main'
+          github.event_name == 'repository_dispatch' && github.ref == 'refs/heads/main'
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{secrets.API_HEROKU_TOKEN}}
@@ -93,8 +92,8 @@ jobs:
           app_name: risk-investigation
           my_email: minh.ht173259@sis.hust.edu.vn
       - name: Notification When Success
-        if: github.event_name == 'repository_dispatch' && github.ref == 'ref/heads/main' && success()
+        if: github.event_name == 'repository_dispatch' && github.ref == 'refs/heads/main' && success()
         run: echo "Deploy Success"
       - name: Notification When Failed
-        if: github.event_name == 'repository_dispatch' && github.ref == 'ref/heads/main' && failure()
+        if: github.event_name == 'repository_dispatch' && github.ref == 'refs/heads/main' && failure()
         run: echo "Deploy Failed"

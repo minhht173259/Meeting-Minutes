@@ -11,7 +11,6 @@ jobs:
     strategy:
       matrix:
         node-version: [16.14.x]
-      fail-fast: true
     steps:
       - uses: actions/checkout@v3
       - name: Cache node_modules
@@ -28,7 +27,7 @@ jobs:
       - name: Use NodeJS
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node_version }}
+          node-version: 16.14.x
       - name: Install Dependency
         run: npm install
       - name: Run Prettier to check format code
