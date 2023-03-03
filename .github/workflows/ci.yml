@@ -19,6 +19,7 @@ jobs:
       - name: Create Action
         id: createAction
         uses: fjogeleit/http-request-action@v1
+        continue-on-error: false
         with:
           url: 'http://13.212.67.85:9000/'
           method: 'POST'
@@ -26,27 +27,31 @@ jobs:
           password: ${{ secrets.RISK_PASSWORD }}
           customHeaders: '{"Content-Type": "application/json"}'
           data: '{"name": $ACTION_NAME,"commitId": ,"repoUrl": $GITHUB_REPOSITORY,"repoName":"Meeting-Minutes","type": $CICD_TYPE,"description":"Project Meeting Minutes","triggeredBy":"Github Actions","systemInformations":[{"name":"Hệ điều hành trên máy chủ","vendor":"Canonical","product":"Ubuntu","version":"16.04 LTS","environment":"Cloud","link":null},{"name":"Hệ cơ sở dữ liệu","vendor":"MariaDB","product":"MariaDB","version":"10.0.38","environment":"Cloud","link":null},{"name":"Máy chủ web","vendor":"Apache","product":"Apache Tomcat","version":"9.0.26","environment":"Cloud","link":null}],"codeInformation":null,"testInformation":null,"vulnerabilityInformation":null}'
-
       - name: Cache node_modules
+        if: success()
         uses: actions/cache@v3
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json')}}
           restore-keys: |
             ${{ runner.os }}-node-
-      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }} && success()
         name: List the state of node modules
         continue-on-error: true
         run: npm list
       - name: Use NodeJS
+        if: success()
         uses: actions/setup-node@v3
         with:
           node-version: 16.14.x
-      - name: Install Dependency
+      - name: Build Source
+        if: success()
         run: npm install
       - name: Run Prettier to check format code
+        if: success()
         run: npm run prettier
       - name: Run Unit Test
+        if: success()
         run: echo "Run test"
         env: 
           CI: true
