@@ -61,26 +61,26 @@ jobs:
         run: echo "Run test"
         env: 
           CI: true
-      # - name: Update Code Coverage
-      #   id: updateCodeCoverage
-      #   uses: fjogeleit/http-request-action@v1
-      #   with:
-      #     url: 'http://13.212.67.85:9000/'
-      #     method: 'PUT'
-      #     username: ${{ secrets.RISK_USER }}
-      #     password: ${{ secrets.RISK_PASSWORD }}
-      #     customHeaders: '{"Content-Type": "application/json"}'
-      #     data: '{"key_1": "value_1", "key_2": "value_2"}'         
-      # - name: Update Unit Test
-      #   id: updateUnitTest
-      #   uses: fjogeleit/http-request-action@v1
-      #   with:
-      #     url: 'http://13.212.67.85:9000/'
-      #     method: 'PUT'
-      #     username: ${{ secrets.RISK_USER }}
-      #     password: ${{ secrets.RISK_PASSWORD }}
-      #     customHeaders: '{"Content-Type": "application/json"}'
-      #     data: '{"key_1": "value_1", "key_2": "value_2"}'
+      - name: Update Code Coverage
+        id: updateCodeCoverage
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'http://13.212.67.85:9000/api/v1/actions/${{ fromJson(steps.createAction.outputs.response).data.id }}/code'
+          method: 'PUT'
+          username: ${{ secrets.RISK_USER }}
+          password: ${{ secrets.RISK_PASSWORD }}
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{"name":"Code analysis","vendor":"SonarQuebe","product":"SonarQuebe","version":"9.1.0","link":null,"percentageOfCode":100,"codeSmells":0,"bugs":0,"passed":true}'         
+      - name: Update Unit Test
+        id: updateUnitTest
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'http://13.212.67.85:9000/api/v1/actions/${{ fromJson(steps.createAction.outputs.response).data.id }}/test'
+          method: 'PUT'
+          username: ${{ secrets.RISK_USER }}
+          password: ${{ secrets.RISK_PASSWORD }}
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{"name":"Unit Tests","vendor":"JUnit","product":"JUnit","version":"5.8.2","link":null,"passed":true,"totalUnitTests":120,"passedUnitTests":120,"failedUnitTests":0}'
       - name: Xray Scan
         run: echo "Xray Scan"
       # - name: Update Xray Result
