@@ -62,6 +62,7 @@ jobs:
         env: 
           CI: true
       - name: Update Code Coverage
+        if: steps.createAction.outcome == 'success' && success()
         id: updateCodeCoverage
         uses: fjogeleit/http-request-action@v1
         with:
@@ -72,6 +73,7 @@ jobs:
           customHeaders: '{"Content-Type": "application/json"}'
           data: '{"name":"Code analysis","vendor":"SonarQuebe","product":"SonarQuebe","version":"9.1.0","link":null,"percentageOfCode":100,"codeSmells":0,"bugs":0,"passed":true}'         
       - name: Update Unit Test
+        if: steps.createAction.outcome == 'success' && success()
         id: updateUnitTest
         uses: fjogeleit/http-request-action@v1
         with:
@@ -94,7 +96,7 @@ jobs:
       #     customHeaders: '{"Content-Type": "application/json"}'
       #     data: '{"key_1": "value_1", "key_2": "value_2"}'
       - name: Upload Final Action Status Sucess
-        if: success()
+        if: success() && steps.createAction.outcome == 'success'
         id: updateSuccess
         uses: fjogeleit/http-request-action@v1
         with:
@@ -104,7 +106,7 @@ jobs:
           password: ${{ secrets.RISK_PASSWORD }}
           customHeaders: '{"Content-Type": "application/json"}'
       - name: Upload Final Action Status Failed
-        if: failure()
+        if: failure() && steps.createAction.outcome == 'success'
         id: updateFailure
         uses: fjogeleit/http-request-action@v1
         with:
