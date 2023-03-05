@@ -32,7 +32,7 @@ jobs:
         if: github.event_name == 'repository_dispatch' && github.ref == 'refs/heads/main' && success()
         uses: fjogeleit/http-request-action@v1
         with:
-          url: 'http://13.212.67.85:9000/api/v1/actions/status/${{ github.event.client_payload.actionId }}/CD?status=SUCCESS'
+          url: 'http://13.214.135.178:9000/api/v1/actions/status/${{ github.event.client_payload.actionId }}/CD?status=SUCCESS'
           method: 'PUT'
           username: ${{ secrets.RISK_USER }}
           password: ${{ secrets.RISK_PASSWORD }}
@@ -41,7 +41,7 @@ jobs:
         if: github.event_name == 'repository_dispatch' && github.ref == 'refs/heads/main' && failure()
         uses: fjogeleit/http-request-action@v1
         with:
-          url: 'http://13.212.67.85:9000/api/v1/actions/status/${{ github.event.client_payload.actionId }}/CD?status=FAILED'
+          url: 'http://13.214.135.178:9000/api/v1/actions/status/${{ github.event.client_payload.actionId }}/CD?status=FAILED'
           method: 'PUT'
           username: ${{ secrets.RISK_USER }}
           password: ${{ secrets.RISK_PASSWORD }}
