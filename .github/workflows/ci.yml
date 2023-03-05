@@ -85,16 +85,17 @@ jobs:
           data: '{"name":"Unit Tests","vendor":"JUnit","product":"JUnit","version":"5.8.2","link":null,"passed":true,"totalUnitTests":120,"passedUnitTests":120,"failedUnitTests":0}'
       - name: Xray Scan
         run: echo "Xray Scan"
-      # - name: Update Xray Result
-      #   id: updateXrayResult
-      #   uses: fjogeleit/http-request-action@v1
-      #   with:
-      #     url: 'http://13.212.67.85:9000/'
-      #     method: 'PUT'
-      #     username: ${{ secrets.RISK_USER }}
-      #     password: ${{ secrets.RISK_PASSWORD }}
-      #     customHeaders: '{"Content-Type": "application/json"}'
-      #     data: '{"key_1": "value_1", "key_2": "value_2"}'
+      - name: Update Xray Scan
+        if: steps.createAction.outcome == 'success' && success()
+        id: updateXray
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'http://13.214.135.178:9000/api/v1/actions/${{ fromJson(steps.createAction.outputs.response).data.id }}/vulnerability'
+          method: 'PUT'
+          username: ${{ secrets.RISK_USER }}
+          password: ${{ secrets.RISK_PASSWORD }}
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{"name":"X-ray Scan","vendor":"JFrog","product":"X-Ray","version":"3.62.2","link":null,"passed":true,"vulnerabilityDependencies":null}'
       - name: Upload Final Action Status Sucess
         if: success() && steps.createAction.outcome == 'success'
         id: updateSuccess
