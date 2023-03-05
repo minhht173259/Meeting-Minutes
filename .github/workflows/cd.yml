@@ -4,7 +4,7 @@ on:
   #   branches: [develop]
   repository_dispatch:
     types: ['prod_deployment']
-    branches: [develop]
+    branches: [main]
 
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
       - name: Build Images
         run: echo "Build images"
       - name: Deploy to Production
-        run: "Deploy to Production"
+        run: echo "Deploy to Production"
       - name: Notification When Success
         if: github.event_name == 'repository_dispatch' && github.ref == 'refs/heads/main' && success()
         uses: fjogeleit/http-request-action@v1
