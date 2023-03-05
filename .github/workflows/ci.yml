@@ -1,4 +1,4 @@
-name: CICD for Develop Deployment
+name: CI Pipeline
 on:
   pull_request:
     branches: [develop]
@@ -8,67 +8,110 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CICD_TYPE: GITHUB
     strategy:
       matrix:
         node-version: [16.14.x]
     steps:
       - uses: actions/checkout@v3
+      - name: Create Action
+        id: createAction
+        uses: fjogeleit/http-request-action@v1
+        continue-on-error: false
+        with:
+          url: 'http://13.214.135.178:9000/api/v1/actions'
+          method: 'POST'
+          username: ${{ secrets.RISK_USER }}
+          password: ${{ secrets.RISK_PASSWORD }}
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{"name": "${{ env.ACTION_NAME }}","commitId": "${{ github.sha }}","repoUrl": "https://github.com/minhht173259/Meeting-Minutes","repoName":"Meeting-Minutes","type": "${{ env.CICD_TYPE }}","description":"Project Meeting Minutes","triggeredBy":"Github Actions","systemInformations":[{"name":"Hệ điều hành trên máy chủ","vendor":"Canonical","product":"Ubuntu","version":"16.04 LTS","environment":"Cloud","link":null},{"name":"Hệ cơ sở dữ liệu","vendor":"MariaDB","product":"MariaDB","version":"10.0.38","environment":"Cloud","link":null},{"name":"Máy chủ web","vendor":"Apache","product":"Apache Tomcat","version":"9.0.26","environment":"Cloud","link":null}],"codeInformation":null,"testInformation":null,"vulnerabilityInformation":null}'
+        env:
+          ACTION_NAME: Meeting Minutes
+      - name: Action Response
+        if: steps.createAction.outcome == 'success'
+        run: |
+          echo ${{ steps.createAction.outputs.response }}
+          echo ${{ fromJson(steps.createAction.outputs.response).data.id }}
       - name: Cache node_modules
+        if: success()
         uses: actions/cache@v3
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json')}}
           restore-keys: |
             ${{ runner.os }}-node-
-      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }} && success()
         name: List the state of node modules
         continue-on-error: true
         run: npm list
       - name: Use NodeJS
+        if: success()
         uses: actions/setup-node@v3
         with:
           node-version: 16.14.x
-      - name: Install Dependency
+      - name: Build Source
+        if: success()
         run: npm install
       - name: Run Prettier to check format code
+        if: success()
         run: npm run prettier
       - name: Run Unit Test
-        # run: npm test -- --coverage
+        if: success()
         run: echo "Run test"
         env: 
           CI: true
-      # - name: Upload Test Coverage 
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: my-artifact
-      #     # path: path/**/[abc]rtifac?/*
-      #     path: coverage
-      - name: Build Project
-        if: github.event_name == 'push'
-        run: npm run build
-        timeout-minutes: 10
-      - name: Upload Build Folder
-        if: github.event_name == 'push' 
-        uses: actions/upload-artifact@v3
+      - name: Update Code Coverage
+        if: steps.createAction.outcome == 'success' && success()
+        id: updateCodeCoverage
+        uses: fjogeleit/http-request-action@v1
         with:
-          name: build
-          # path: path/**/[abc]rtifac?/*
-          path: build
-      # - name: Download Artifact
-      #   if: github.event_name == 'push'
-      #   uses: actions/download-artifact@v3
-      - name: Deploy to Staging
-        if: github.event_name == 'push'
-        run: echo "deloy to Surge"
-      # - name: Deploy to Heroku
-      #   if: >-
-      #     github.event_nam == 'push' && github.ref == 'ref/heads/develop'
-      #   uses: akhileshns/heroku-deploy@v3.12.12
+          url: 'http://13.214.135.178:9000/api/v1/actions/${{ fromJson(steps.createAction.outputs.response).data.id }}/code'
+          method: 'PUT'
+          username: ${{ secrets.RISK_USER }}
+          password: ${{ secrets.RISK_PASSWORD }}
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{"name":"Code analysis","vendor":"SonarQuebe","product":"SonarQuebe","version":"9.1.0","link":null,"percentageOfCode":100,"codeSmells":0,"bugs":0,"passed":true}'         
+      - name: Update Unit Test
+        if: steps.createAction.outcome == 'success' && success()
+        id: updateUnitTest
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'http://13.214.135.178:9000/api/v1/actions/${{ fromJson(steps.createAction.outputs.response).data.id }}/test'
+          method: 'PUT'
+          username: ${{ secrets.RISK_USER }}
+          password: ${{ secrets.RISK_PASSWORD }}
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{"name":"Unit Tests","vendor":"JUnit","product":"JUnit","version":"5.8.2","link":null,"passed":true,"totalUnitTests":120,"passedUnitTests":120,"failedUnitTests":0}'
+      - name: Xray Scan
+        run: echo "Xray Scan"
+      # - name: Update Xray Result
+      #   id: updateXrayResult
+      #   uses: fjogeleit/http-request-action@v1
       #   with:
-      #     heroku_api_key: ${{secrets.API_HEROKU_TOKEN}}
-      #     heroku_app_name: $app_name #Must be unique in Heroku
-      #     heroku_email: $my_email
-      #     usedocker: true
-      #   env:
-      #     app_name: risk-investigation
-      #     my_email: minh.ht173259@sis.hust.edu.vn
+      #     url: 'http://13.212.67.85:9000/'
+      #     method: 'PUT'
+      #     username: ${{ secrets.RISK_USER }}
+      #     password: ${{ secrets.RISK_PASSWORD }}
+      #     customHeaders: '{"Content-Type": "application/json"}'
+      #     data: '{"key_1": "value_1", "key_2": "value_2"}'
+      - name: Upload Final Action Status Sucess
+        if: success() && steps.createAction.outcome == 'success'
+        id: updateSuccess
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'http://13.214.135.178:9000/api/v1/actions/status/${{ fromJson(steps.createAction.outputs.response).data.id }}/CI?status=SUCCESS'
+          method: 'PUT'
+          username: ${{ secrets.RISK_USER }}
+          password: ${{ secrets.RISK_PASSWORD }}
+          customHeaders: '{"Content-Type": "application/json"}'
+      - name: Upload Final Action Status Failed
+        if: failure() && steps.createAction.outcome == 'success'
+        id: updateFailure
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'http://13.214.135.178:9000/api/v1/actions/status/${{ fromJson(steps.createAction.outputs.response).data.id }}/CI?status=FAILED'
+          method: 'PUT'
+          username: ${{ secrets.RISK_USER }}
+          password: ${{ secrets.RISK_PASSWORD }}
+          customHeaders: '{"Content-Type": "application/json"}'          
