@@ -1,7 +1,7 @@
 name: CD Pipeline
 on:
-  pull_request:
-    branches: [develop]
+  # pull_request:
+  #   branches: [develop]
   repository_dispatch:
     types: ['prod_deployment']
     branches: [develop]
